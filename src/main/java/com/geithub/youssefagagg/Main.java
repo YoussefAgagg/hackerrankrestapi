@@ -5,11 +5,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.DoubleStream;
 
 public class Main {
   public static void main(String[] args) throws Exception {
-    String response = ApiFetcher.fetchDataFromApi(1, 1);
+    String response = ApiFetcher.fetchDataFromApi(2, 1);
     System.out.println(response);
     int perPageIndex = response.indexOf("per_page\":");
     int firstComa = response.indexOf(",", perPageIndex);
@@ -23,38 +22,50 @@ public class Main {
     System.out.println(totalPages);
     System.out.println(total);
     System.out.println(perPage);
-    List<Double> temp= new ArrayList<>();
+    List<Pair> temp= new ArrayList<>();
     if (totalPages==0){
       System.out.println("0");
       return;
     }
-    double d=getTotalOfBodyTemp(response);
-    temp.add(d);
-    System.out.println(d);
+    System.out.println("********");
+    temp.add(getTotalOfBodyTemp(response));
+    List<Integer>l =new ArrayList<>();
+
     for (int i = 2; i <= totalPages; i++) {
       String response2 = ApiFetcher.fetchDataFromApi(1, i);
-      double d2=getTotalOfBodyTemp(response2);
+      Pair d2=getTotalOfBodyTemp(response2);
       temp.add(d2);
       System.out.println(d2);
     }
-    double x = temp.stream().mapToDouble(Double::doubleValue).sum() / temp.size();
+    double x = temp.stream().mapToDouble(value -> value.sum).sum() / temp.stream().mapToInt(value -> value.count).sum();
 
     System.out.println(String.format("%.1f", x));
 
   }
 
-  private static double getTotalOfBodyTemp(String response) {
+  private static Pair getTotalOfBodyTemp(String response) {
     int index = response.indexOf("bodyTemperature\":");
     double sum = 0;
     int size =17;
+    int count = 0;
     while (index >= 0) {
       int firstComa4 = response.indexOf("},", index);
       double temp = Double.parseDouble(response.substring(index + size, firstComa4));
         sum += temp;
       index = response.indexOf("bodyTemperature\":", index + 1);
+      count++;
 //      size=18;
     }
-    return sum;
+    return new Pair(sum, count);
+  }
+  static class Pair{
+    double sum;
+    int count;
+
+    public Pair(double sum, int count) {
+      this.sum = sum;
+      this.count = count;
+    }
   }
 
 
