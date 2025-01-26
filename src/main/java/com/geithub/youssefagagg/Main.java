@@ -54,7 +54,6 @@ public class Main {
         sum += temp;
       index = response.indexOf("bodyTemperature\":", index + 1);
       count++;
-//      size=18;
     }
     return new Pair(sum, count);
   }
